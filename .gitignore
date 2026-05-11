@@ -1,0 +1,41 @@
+# Большие данные — не коммитим
+**/data/input/
+**/data/reference/
+**/data/db/
+**/outputs/
+!variants/data/db/chr_synonyms.txt
+
+# Форматы геномных данных
+*.bam
+*.bai
+*.vcf
+*.vcf.gz
+*.vcf.gz.tbi
+*.fastq
+*.fq
+*.fastq.gz
+*.fq.gz
+*.fasta
+*.fa
+*.fasta.gz
+*.fna
+*.fna.gz
+*.dict
+*.amb
+*.ann
+*.bwt
+*.pac
+*.sa
+*.hmm
+*.hmm.h3*
+*.dmnd
+
+# Conda
+.conda/
+*.egg-info/
+
+# Системное
+.DS_Store
+__pycache__/
+*.pyc
+*.pyo

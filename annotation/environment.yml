@@ -1,0 +1,13 @@
+name: annotation
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - prokka=1.14
+  - diamond=2.1
+  - hmmer=3.4
+  - htslib=1.21          # bgzip, tabix
+  - seqkit=2.8
+  - wget
+  - python=3.11

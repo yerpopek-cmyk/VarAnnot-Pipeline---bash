@@ -1,0 +1,13 @@
+name: variants
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bwa
+  - samtools=1.21
+  - freebayes=1.3
+  - bcftools=1.21
+  - htslib=1.21          # tabix, bgzip
+  - ensembl-vep=113
+  - python=3.11
