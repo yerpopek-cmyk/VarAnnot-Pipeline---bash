@@ -39,3 +39,6 @@
 __pycache__/
 *.pyc
 *.pyo
+
+# Local Config
+variants/workflow/config.sh
