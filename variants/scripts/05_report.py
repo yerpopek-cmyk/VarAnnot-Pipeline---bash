@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-05_report.py — Приоритизация вариантов и Markdown-отчёт.
+05_report.py — Variant prioritization and Markdown report generation.
 
-Парсит поле CSQ (Ensembl VEP) из аннотированного VCF,
-вычисляет составной балл, выводит TSV и отчёт.
+Parses the CSQ field (Ensembl VEP) from an annotated VCF,
+calculates a composite score, and outputs a TSV and a Markdown report.
 
-Использование:
+Usage:
     python3 05_report.py <annotated.vcf.gz> <output_dir> [--top N]
 """
 import argparse
@@ -15,13 +15,13 @@ from pathlib import Path
 from datetime import datetime
 
 # ---------------------------------------------------------------------------
-# Весовые таблицы
+# Weight Tables
 # ---------------------------------------------------------------------------
 IMPACT_SCORE: dict[str, int] = {
     "HIGH": 4, "MODERATE": 2, "LOW": 1, "MODIFIER": 0
 }
 
-# ClinVar-значения приходят в нижнем регистре через VEP
+# ClinVar values come in lowercase through VEP
 CLNSIG_SCORE: dict[str, int] = {
     "pathogenic": 5,
     "likely_pathogenic": 3,
@@ -32,19 +32,19 @@ CLNSIG_SCORE: dict[str, int] = {
 }
 
 # ---------------------------------------------------------------------------
-# Парсинг
+# Parsing
 # ---------------------------------------------------------------------------
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("vcf",    help="Аннотированный VCF (VEP, bgzip)")
-    p.add_argument("outdir", help="Выходная директория")
+    p.add_argument("vcf",    help="Annotated VCF (VEP, bgzip)")
+    p.add_argument("outdir", help="Output directory")
     p.add_argument("--top",  type=int, default=20,
-                   help="Число топ-вариантов в отчёте (по умолчанию: 20)")
+                   help="Number of top variants in the report (default: 20)")
     return p.parse_args()
 
 
 def _csq_fields_from_header(header_lines: list[str]) -> list[str]:
-    """Извлечь поля CSQ из строки ##INFO=<ID=CSQ,...> в заголовке VCF."""
+    """Extract CSQ fields from the ##INFO=<ID=CSQ,...> line in the VCF header."""
     for line in header_lines:
         if "ID=CSQ" in line and "Format:" in line:
             fragment = line.split("Format:")[1].rstrip('">')
@@ -53,7 +53,7 @@ def _csq_fields_from_header(header_lines: list[str]) -> list[str]:
 
 
 def _info_value(info: str, key: str) -> str | None:
-    """Вернуть значение поля KEY= из строки INFO."""
+    """Return the value of the KEY= field from the INFO string."""
     prefix = f"{key}="
     for field in info.split(";"):
         if field.startswith(prefix):
@@ -62,15 +62,15 @@ def _info_value(info: str, key: str) -> str | None:
 
 
 def _compute_score(impact: str, clnsig_raw: str, af_raw: str) -> tuple[int, float | None]:
-    """Вычислить приоритетный балл варианта."""
+    """Calculate the priority score for a variant."""
     score = IMPACT_SCORE.get(impact, 0)
 
-    # ClinVar (несколько значений через &)
+    # ClinVar (multiple values separated by &)
     if clnsig_raw:
         for sig in clnsig_raw.lower().replace(" ", "_").split("&"):
             score += CLNSIG_SCORE.get(sig.strip(), 0)
 
-    # Частота gnomAD
+    # gnomAD Allele Frequency
     af: float | None = None
     if af_raw and af_raw not in ("", "."):
         try:
@@ -90,8 +90,8 @@ def _compute_score(impact: str, clnsig_raw: str, af_raw: str) -> tuple[int, floa
 
 def parse_vcf(vcf_path: str) -> list[dict]:
     """
-    Распарсить аннотированный VCF.
-    Возвращает список вариантов (только PASS или неразмеченные).
+    Parse the annotated VCF.
+    Returns a list of variants (only PASS or unfiltered).
     """
     open_fn = gzip.open if vcf_path.endswith(".gz") else open
     header_lines: list[str] = []
@@ -104,13 +104,13 @@ def parse_vcf(vcf_path: str) -> list[dict]:
 
             if line.startswith("##"):
                 header_lines.append(line)
-                # Читаем поля CSQ на лету, чтобы не перечитывать заголовок
+                # Read CSQ fields on the fly to avoid re-reading the header
                 if not csq_fields and "ID=CSQ" in line:
                     csq_fields = _csq_fields_from_header([line])
                 continue
 
             if line.startswith("#"):
-                continue  # строка с именами колонок
+                continue  # column names row
 
             cols = line.split("\t")
             if len(cols) < 8:
@@ -118,7 +118,7 @@ def parse_vcf(vcf_path: str) -> list[dict]:
 
             chrom, pos, _, ref, alt, qual, filt, info = cols[:8]
 
-            # Пропускаем варианты с мягкими фильтрами (LowQual / LowAB)
+            # Skip variants with soft filters (LowQual / LowAB)
             if filt not in (".", "PASS", ""):
                 continue
 
@@ -126,7 +126,7 @@ def parse_vcf(vcf_path: str) -> list[dict]:
             if not csq_raw:
                 continue
 
-            # Берём первую запись CSQ — VEP сортирует по убыванию значимости
+            # Take the first CSQ entry — VEP sorts by decreasing severity
             first = csq_raw.split(",")[0].split("|")
             csq = dict(zip(csq_fields, first)) if csq_fields else {}
 
@@ -162,7 +162,7 @@ def parse_vcf(vcf_path: str) -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
-# Запись результатов
+# Output Writing
 # ---------------------------------------------------------------------------
 def write_tsv(variants: list[dict], path: Path) -> None:
     if not variants:
@@ -194,25 +194,25 @@ def write_report(variants: list[dict], path: Path, top_n: int) -> None:
         )
 
     path.write_text(f"""\
-# Отчёт по вариантам
-Создан: {now}
+# Variant Report
+Generated: {now}
 
-## Сводка
+## Summary
 
-| Показатель | Значение |
+| Metric | Value |
 |---|---|
-| Всего PASS-вариантов | {len(variants)} |
+| Total PASS variants | {len(variants)} |
 | HIGH impact | {high} |
 | MODERATE impact | {mod} |
-| Патогенных (ClinVar) | {path_var} |
+| Pathogenic (ClinVar) | {path_var} |
 
-## Топ-{top_n} по приоритету
+## Top {top_n} by priority
 
 {header}
 {sep}
 {chr(10).join(rows)}
 
-## Формула балла
+## Scoring Formula
 
 ```
 SCORE = IMPACT_score + gnomAD_AF_score + ClinVar_score
@@ -226,7 +226,7 @@ ClinVar:  Pathogenic=+5, Likely_pathogenic=+3, Uncertain=0,
 
 
 # ---------------------------------------------------------------------------
-# Точка входа
+# Entry Point
 # ---------------------------------------------------------------------------
 def main() -> None:
     args = parse_args()
@@ -235,12 +235,12 @@ def main() -> None:
 
     sample = Path(args.vcf).name.split(".")[0]
 
-    print(f"[05] Парсинг: {args.vcf}")
+    print(f"[05] Parsing: {args.vcf}")
     variants = parse_vcf(args.vcf)
-    print(f"[05] PASS-вариантов: {len(variants)}")
+    print(f"[05] PASS variants: {len(variants)}")
 
     if not variants:
-        print("[05] ⚠️  Нет вариантов для отчёта.", file=sys.stderr)
+        print("[05] ⚠️  No variants to report.", file=sys.stderr)
         return
 
     tsv_path = outdir / f"{sample}.prioritized.tsv"
@@ -250,7 +250,7 @@ def main() -> None:
     write_report(variants, md_path, args.top)
 
     print(f"[05] TSV    : {tsv_path}")
-    print(f"[05] Отчёт : {md_path}")
+    print(f"[05] Report : {md_path}")
 
 
 if __name__ == "__main__":

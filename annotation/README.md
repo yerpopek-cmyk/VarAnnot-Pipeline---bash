@@ -1,32 +1,32 @@
 # Genome Annotation
 
-Функциональная аннотация бактериального генома за один скрипт.
+Functional annotation of bacterial genomes in a single script.
 
-## Стек
+## Stack
 
-| Инструмент | Задача |
+| Tool | Task |
 |---|---|
-| **Prokka** | Структурная аннотация (ORF, тРНК, рРНК) |
-| **DIAMOND blastp** | Функциональная гомология (Swiss-Prot) |
-| **hmmscan** | Доменная аннотация (Pfam) |
+| **Prokka** | Structural annotation (ORF, tRNA, rRNA) |
+| **DIAMOND blastp** | Functional homology mapping (Swiss-Prot) |
+| **hmmscan** | Domain annotation (Pfam) |
 
-## Запуск
+## Usage
 
 ```bash
 conda env create -f environment.yml
 conda activate annotation
 
-# Полный запуск (скачает тестовый геном B. subtilis ~4 МБ)
+# Full run (downloads a test genome B. subtilis ~4 MB)
 bash run_annotation.sh
 
-# Офлайн (данные уже в data/)
+# Offline mode (data already present in data/)
 bash run_annotation.sh --offline
 
-# Ограничить число белков для hmmscan (тест)
+# Limit the number of proteins for hmmscan (for testing)
 bash run_annotation.sh --max-proteins 200 --cpus 4
 ```
 
-## Структура выходных данных
+## Output Structure
 
 ```
 outputs/run_YYYYMMDD_HHMMSS/
@@ -35,6 +35,6 @@ outputs/run_YYYYMMDD_HHMMSS/
 └── hmmer/              # domtblout.txt
 ```
 
-## Размещение своего генома
+## Running Your Own Genome
 
-Положи `assembly.fasta` в `data/input/` и запусти с `--offline`.
+Place your `assembly.fasta` into `data/input/` and run the script with the `--offline` flag.

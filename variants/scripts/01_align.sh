@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# 01_align.sh — BWA: выравнивание → MarkDup → индексация
-# Выходной BAM: ${RUN_DIR}/1_bams/${SAMPLE_ID}.bam
+# 01_align.sh — BWA: alignment → MarkDup → index
+# Output BAM: ${RUN_DIR}/1_bams/${SAMPLE_ID}.bam
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -8,13 +8,13 @@ source "${SCRIPT_DIR}/../workflow/config.sh"
 
 OUT_BAM="${RUN_DIR}/1_bams/${SAMPLE_ID}.bam"
 
-# --- Пропуск шага, если используется готовый BAM ---
+# --- Skip step if a ready BAM is used ---
 if [[ -n "${BAM_INPUT:-}" ]]; then
-    echo "[01] BAM_INPUT задан ($BAM_INPUT). Пропускаем выравнивание FASTQ."
+    echo "[01] BAM_INPUT is set ($BAM_INPUT). Skipping FASTQ alignment."
     exit 0
 fi
 
-# --- Индексирование референса (если нужно) ---
+# --- Indexing the reference (if necessary) ---
 [[ -f "${REF_FASTA}.fai" ]]              || samtools faidx "$REF_FASTA"
 [[ -f "${REF_FASTA}.bwt" ]]              || bwa index "$REF_FASTA"
 
@@ -27,6 +27,6 @@ bwa mem \
   | samtools sort -@ "$THREADS" -m "$MEM_SORT" \
   | samtools markdup -@ "$THREADS" --write-index - "$OUT_BAM"
 
-echo "[01] Флаги выравнивания:"
+echo "[01] Alignment flags:"
 samtools flagstat "$OUT_BAM" | tee "${RUN_DIR}/1_bams/${SAMPLE_ID}.flagstat"
-echo "[01] BAM готов: $OUT_BAM"
+echo "[01] BAM is ready: $OUT_BAM"

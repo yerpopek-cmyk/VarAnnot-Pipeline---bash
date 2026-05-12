@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# 02_call.sh — вызов вариантов с FreeBayes
-# Выход: ${RUN_DIR}/2_vcf_raw/${SAMPLE_ID}.raw.vcf.gz
+# 02_call.sh — Variant calling with FreeBayes
+# Output: ${RUN_DIR}/2_vcf_raw/${SAMPLE_ID}.raw.vcf.gz
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -21,5 +21,5 @@ freebayes \
   | bgzip -@ "$THREADS" > "$VCF_OUT"
 
 tabix -p vcf "$VCF_OUT"
-echo "[02] Найдено вариантов: $(bcftools view -H "$VCF_OUT" | wc -l)"
-echo "[02] Сырой VCF: $VCF_OUT"
+echo "[02] Variants found: $(bcftools view -H "$VCF_OUT" | wc -l)"
+echo "[02] Raw VCF: $VCF_OUT"

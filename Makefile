@@ -1,12 +1,12 @@
 .PHONY: env-annotation env-variants annotate variants clean help
 
 help:
-	@echo "Доступные команды:"
-	@echo "  make env-annotation   — создать conda-окружение для аннотации генома"
-	@echo "  make env-variants     — создать conda-окружение для вариантного пайплайна"
-	@echo "  make annotate         — запустить аннотацию генома (annotation/)"
-	@echo "  make variants         — запустить вариантный пайплайн (variants/)"
-	@echo "  make clean            — удалить outputs/"
+	@echo "Available commands:"
+	@echo "  make env-annotation   — create conda environment for genome annotation"
+	@echo "  make env-variants     — create conda environment for variant pipeline"
+	@echo "  make annotate         — run genome annotation (annotation/)"
+	@echo "  make variants         — run variant pipeline (variants/)"
+	@echo "  make clean            — remove outputs/"
 
 env-annotation:
 	conda env create -f annotation/environment.yml

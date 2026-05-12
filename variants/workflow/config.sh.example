@@ -1,37 +1,37 @@
 #!/usr/bin/env bash
 # =============================================================================
 # variants/workflow/config.sh
-# Единая точка настройки пайплайна.
-# Скопируй этот файл как config.sh и отредактируй под свой образец.
+# Single point of configuration for the pipeline.
+# Copy this file as config.sh and edit it for your sample.
 # =============================================================================
 
-# --- Ресурсы ---
+# --- Resources ---
 THREADS=$(( $(nproc) > 2 ? $(nproc) - 2 : $(nproc) ))
-MEM_SORT="4G"              # память на поток для samtools sort
+MEM_SORT="4G"              # memory per thread for samtools sort
 
-# --- Образец ---
+# --- Sample ---
 SAMPLE_ID="sample01"
 
-# --- Входные данные ---
-# Вариант A: начинаем с FASTQ
+# --- Input Data ---
+# Option A: Start from FASTQ
 READS_R1="data/input/reads_R1.fastq.gz"
 READS_R2="data/input/reads_R2.fastq.gz"
-# Вариант B: начинаем с готового BAM (тогда пропускаем шаг 01)
+# Option B: Start from ready BAM (skip step 01)
 # BAM_INPUT="data/input/sample.bam"
 
-# --- Референсный геном ---
-REF_FASTA="data/reference/ref.fasta"     # hg38 или chr22 для теста
+# --- Reference Genome ---
+REF_FASTA="data/reference/ref.fasta"     # hg38 or chr22 for testing
 
-# --- Базы данных для аннотации ---
-VEP_CACHE_DIR="data/db/vep_cache"        # локальный кэш VEP (~15 ГБ для hg38)
-VEP_ASSEMBLY="GRCh38"                    # или GRCh37
+# --- Databases for Annotation ---
+VEP_CACHE_DIR="data/db/vep_cache"        # local VEP cache (~15 GB for hg38)
+VEP_ASSEMBLY="GRCh38"                    # or GRCh37
 
-# --- Пороги фильтрации ---
-MIN_QUAL=30        # минимальный QUAL
-MIN_DP=10          # минимальная глубина покрытия
-MAX_DP=250         # максимальная глубина (защита от повторов)
-MIN_AB=0.20        # мин. allele balance для гетерозигот
-MAX_AB=0.80        # макс.
+# --- Filtering Thresholds ---
+MIN_QUAL=30        # minimum QUAL
+MIN_DP=10          # minimum depth of coverage
+MAX_DP=250         # maximum depth (protection against repeats)
+MIN_AB=0.20        # min allele balance for heterozygotes
+MAX_AB=0.80        # max allele balance
 
-# --- Отчёт ---
-TOP_VARIANTS=20    # сколько топ-вариантов выводить в отчёт
+# --- Reporting ---
+TOP_VARIANTS=20    # number of top variants to include in the report
